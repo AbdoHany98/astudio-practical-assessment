@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use Attribute;
 use App\Models\User;
 use App\Models\Timesheet;
-use Attribute;
+use App\Models\AttributeValue;
 use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
