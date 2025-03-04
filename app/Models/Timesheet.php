@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\User;
-use App\Models\Timesheet;
+use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
 
 class Timesheet extends Model
@@ -21,8 +21,8 @@ class Timesheet extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function timesheet()
+    public function project()
     {
-        return $this->belongsTo(Timesheet::class);
+        return $this->belongsTo(Project::class);
     }
 }
