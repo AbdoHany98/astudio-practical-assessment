@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Modules\Academy\Requests\UserLoginRequest;
-use Modules\Academy\Requests\UserRegistrationRequest;
+use App\Http\Requests\UserLoginRequest;
+use App\Http\Requests\UserRegistrationRequest;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class AuthController extends Controller
