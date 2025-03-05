@@ -8,6 +8,7 @@ use Illuminate\Http\Response;
 use App\Models\AttributeValue;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProjectResource;
 use App\Http\Requests\CreateProjectRequest;
 
@@ -60,12 +61,10 @@ class ProjectController extends Controller
             
             $project = Project::create($validated);
             
-            // Sync users if provided
             if ($request->has('users')) {
                 $project->users()->sync($request->input('users', []));
             }
             
-            // Sync attributes if provided
             if ($request->has('attributes')) {
                 $this->syncAttributes($project, $request->input('attributes', []));
             }
@@ -82,22 +81,18 @@ class ProjectController extends Controller
         }
     }
 
-    public function show($id)
+    public function show(Project $project)
     {
-        $project = Project::with(['attributeValues.attribute', 'users'])
-            ->findOrFail($id);
+        $project->load(['attributeValues.attribute', 'users']);
             
         return new ProjectResource($project);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Project $project)
     {
-        try {
-            $project = Project::findOrFail($id);
-            
+        try {            
             DB::beginTransaction();
             
-            // Update basic fields
             if ($request->has('name')) {
                 $project->name = $request->input('name');
             }
@@ -108,12 +103,10 @@ class ProjectController extends Controller
             
             $project->save();
             
-            // Sync users if provided
             if ($request->has('users')) {
                 $project->users()->sync($request->input('users', []));
             }
             
-            // Sync attributes if provided
             if ($request->has('attributes')) {
                 $this->syncAttributes($project, $request->input('attributes', []));
             }
@@ -130,20 +123,13 @@ class ProjectController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Project $project)
     {
-        try {
-            $project = Project::findOrFail($id);
-            
+        try {            
             DB::beginTransaction();
-            
-            // Delete related attribute values
+
             $project->attributeValues()->delete();
-            
-            // Detach users
             $project->users()->detach();
-            
-            // Delete the project
             $project->delete();
             
             DB::commit();
