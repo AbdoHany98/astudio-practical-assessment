@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Timesheet extends Model
 {
     protected $fillable = [
-        'task_name',
+        'name',
         'date',
         'hours',
         'user_id',
