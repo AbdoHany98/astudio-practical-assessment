@@ -67,6 +67,8 @@ class AttributeController extends Controller
 
     public function destroy(Attribute $attribute)
     {
+        $attribute->values()->delete();
+
         $attribute->delete();
 
         return response()->json([
