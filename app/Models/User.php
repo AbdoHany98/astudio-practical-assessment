@@ -26,6 +26,7 @@ class User extends Authenticatable
         'last_name',
         'email',
         'password',
+        'is_admin'
     ];
 
     /**
@@ -57,5 +58,10 @@ class User extends Authenticatable
     public function timesheets()    
     {
         return $this->hasMany(Timesheet::class);
+    }
+
+    public function isAdmin()
+    {
+        return $this->is_admin;
     }
 }
