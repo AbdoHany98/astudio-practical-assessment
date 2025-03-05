@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\TimesheetController;
 use App\Http\Middleware\AdminCheck;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
@@ -17,7 +18,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::apiResource('attribute-values', AttributeValueController::class);
     Route::apiResource('attributes', AttributeController::class);
-    Route::apiResource('attribute-values', AttributeValueController::class);
+    Route::apiResource('timesheets', TimesheetController::class);
     Route::apiResource('projects', ProjectController::class)->except(['store', 'update', 'destroy']);
        
     Route::middleware(AdminCheck::class)->group(function () {
