@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,37 +16,48 @@ class AuthController extends Controller
 {
     public function register(UserRegistrationRequest $request)
     {
-        try{
+        try {
+            DB::beginTransaction();
             $validatedData = $request->validated();
             $validatedData['password'] = Hash::make($validatedData['password']);
             $user = User::create($validatedData);
+
             $token = $user->createToken('API Token')->accessToken;
 
+            DB::commit();
             return response()->json([
-                'user' => $user,
-                'access_token' => $token
+                'status' => 1,
+                'message' => "User Registered",
+                'token' => $token
             ], 201);
-
-        }catch(\Exception $e){
-            return response()->json(['message' => 'Something went wrong'], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            dd($e);
+            return response()->json(['message' => $e->getMessage()], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
         }
-
     }
-
     public function login(UserLoginRequest $request)
     {
         $credentials = $request->validated();
-        if(Auth::attempt($credentials)){
+
+        if (Auth::attempt($credentials)) {
             $user = Auth::user();
             $token = $user->createToken('API Token')->accessToken;
-            return response()->json(['access_token' => $token]);
+            return response()->json([
+                'user' => $user,
+                'token' => $token
+            ]);
         }
-        return response()->json(['message'=> 'Invalid Credentials'], 401);
-    }
 
+        return response()->json(['message' => 'Invalid Credentials'], 401);
+    }
     public function logout(Request $request)
     {
-        $request->user()->token()->revoke();
-        return response()->json(['message' => 'Successfully logged out']);
+        $token = $request->user()->token();
+        $token->revoke();
+
+        return response()->json([
+            'message' => 'Successfully logged out'
+        ]);
     }
 }
