@@ -20,8 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Passport::hashClientSecrets();
-        Passport::loadKeysFrom(storage_path());
+        // Passport::hashClientSecrets();
         
         // If you need to customize token expiration
         Passport::tokensExpireIn(now()->addDays(15));
