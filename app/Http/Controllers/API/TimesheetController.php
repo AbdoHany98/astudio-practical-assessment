@@ -31,10 +31,19 @@ class TimesheetController extends Controller
         if ($request->has('date_to')) {
             $query->where('date', '<=', $request->date_to);
         }
+        $paginate = $request->input('paginate', 10);
+        $timesheets = $query->with(['user', 'project'])->paginate($paginate);
         
-        $timesheets = $query->with(['user', 'project'])->get();
-        
-        return response()->json(['data' => $timesheets], Response::HTTP_OK);
+        return response()->json([
+            'success' => true,
+            'data' => $timesheets->items(),
+            'pagination' => [
+                    'current_page' => $timesheets->currentPage(),
+                    'total_pages' => $timesheets->lastPage(),
+                    'per_page' => $timesheets->perPage(),
+                    'total_records' => $timesheets->total(),
+                ],
+        ], Response::HTTP_OK);
     }
 
     public function store(Request $request)

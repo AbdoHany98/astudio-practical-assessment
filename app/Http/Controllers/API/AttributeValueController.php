@@ -10,13 +10,46 @@ use Illuminate\Support\Facades\Auth;
 
 class AttributeValueController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $attributeValues = AttributeValue::with('attribute')->get();
+        $user = Auth::user();
+        $query = AttributeValue::with('attribute');
+
+        if (!$user->isAdmin()) {
+            $projectIds = $user->projects()->pluck('projects.id')->toArray();
+            $query->whereIn('entity_id', $projectIds);
+
+            if ($request->has('entity_id')) {
+                $requestedEntityId = $request->entity_id;
+                if (!in_array($requestedEntityId, $projectIds)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Unauthorized access to project'
+                    ], 403);
+                }
+                $query->where('entity_id', $requestedEntityId);
+            }
+        } else {
+            if ($request->has('entity_id')) {
+                $query->where('entity_id', $request->entity_id);
+            }
+        }
+
+        $this->applyCommonFilters($query, $request);
+
+        $this->applySorting($query, $request);
+
+        $attributeValues = $query->paginate($request->input('paginate', 10));
 
         return response()->json([
             'success' => true,
-            'data' => $attributeValues
+            'data' => $attributeValues->items(),
+            'pagination' => [
+                'current_page' => $attributeValues->currentPage(),
+                'total_pages' => $attributeValues->lastPage(),
+                'per_page' => $attributeValues->perPage(),
+                'total_records' => $attributeValues->total(),
+            ]
         ]);
     }
 
@@ -121,5 +154,54 @@ class AttributeValueController extends Controller
         }
 
         return null;
+    }
+
+    protected function applyCommonFilters($query, $request)
+    {
+        if ($request->has('value')) {
+            $operator = $request->boolean('exact_match') ? '=' : 'LIKE';
+            $value = $request->boolean('exact_match') ? $request->value : "%{$request->value}%";
+            $query->where('value', $operator, $value);
+        }
+
+        if ($request->has('attribute_id')) {
+            $query->where('attribute_id', $request->attribute_id);
+        }
+
+        if ($request->has('attribute_name')) {
+            $query->whereHas(
+                'attribute',
+                fn($q) =>
+                $q->where('name', 'LIKE', "%{$request->attribute_name}%")
+            );
+        }
+
+        if ($request->has('attribute_type')) {
+            $query->whereHas(
+                'attribute',
+                fn($q) =>
+                $q->where('type', $request->attribute_type)
+            );
+        }
+
+        if ($request->has('created_from')) {
+            $query->where('created_at', '>=', $request->created_from);
+        }
+
+        if ($request->has('created_to')) {
+            $query->where('created_at', '<=', $request->created_to);
+        }
+    }
+
+    protected function applySorting($query, $request)
+    {
+        $validSorts = ['attribute_id', 'entity_id', 'value', 'created_at', 'updated_at'];
+        $sortBy = in_array($request->sort_by, $validSorts)
+            ? $request->sort_by
+            : 'created_at';
+
+        $sortDir = strtolower($request->sort_dir) === 'asc' ? 'asc' : 'desc';
+
+        $query->orderBy($sortBy, $sortDir);
     }
 }
