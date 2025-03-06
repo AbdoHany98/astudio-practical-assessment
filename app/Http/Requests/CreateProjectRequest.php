@@ -23,7 +23,7 @@ class CreateProjectRequest extends FormRequest
     {
         return [
             'name' => 'required|string',
-            'status' => 'required|string|in:active,completed,cancelled,inactive',
+            'status' => 'required|string',
             'users' => 'array|exists:users,id',
             'attributes' => 'array|nullable',
             'attributes.*.attribute_id' => 'required|exists:attributes,id',
