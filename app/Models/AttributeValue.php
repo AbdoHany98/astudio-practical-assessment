@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Project;
 use App\Models\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,5 +17,10 @@ class AttributeValue extends Model
     public function attribute()
     {
         return $this->belongsTo(Attribute::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class, 'entity_id');
     }
 }

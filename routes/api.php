@@ -17,7 +17,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::apiResource('attribute-values', AttributeValueController::class);
-    Route::apiResource('attributes', AttributeController::class);
+    Route::apiResource('attributes', AttributeController::class)->except(['store', 'update', 'destroy']);
     Route::apiResource('timesheets', TimesheetController::class);
     Route::apiResource('projects', ProjectController::class)->except(['store', 'update', 'destroy']);
        
@@ -25,5 +25,8 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/projects', [ProjectController::class, 'store']);
         Route::put('/projects/{project}', [ProjectController::class, 'update']);
         Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+        Route::post('/attributes', [AttributeController::class, 'store']);
+        Route::put('/attributes/{attribute}', [AttributeController::class, 'update']);
+        Route::delete('/attributes/{attribute}', [AttributeController::class, 'destroy']);
     });
 });
