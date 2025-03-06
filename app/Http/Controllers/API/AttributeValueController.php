@@ -17,59 +17,29 @@ class AttributeValueController extends Controller
 
         if (!$user->isAdmin()) {
             $projectIds = $user->projects()->pluck('projects.id')->toArray();
+            $query->whereIn('entity_id', $projectIds);
 
-            if ($request->has('entity_id')) {   
+            if ($request->has('entity_id')) {
                 $requestedEntityId = $request->entity_id;
                 if (!in_array($requestedEntityId, $projectIds)) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'You do not have permission to view attributes for this project'
+                        'message' => 'Unauthorized access to project'
                     ], 403);
                 }
                 $query->where('entity_id', $requestedEntityId);
             }
-            else {
-                $query->whereIn('entity_id', $projectIds);
+        } else {
+            if ($request->has('entity_id')) {
+                $query->where('entity_id', $request->entity_id);
             }
         }
-        else if ($request->has('entity_id')) {
-            $query->where('entity_id', $request->entity_id);
-        }
-        if ($request->has('attribute_id')) {
-            $query->where('attribute_id', $request->attribute_id);
-        }
 
-        if ($request->has('attribute_name')) {
-            $query->whereHas('attribute', function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->attribute_name . '%');
-            });
-        }
+        $this->applyCommonFilters($query, $request);
 
-        if ($request->has('attribute_type')) {
-            $query->whereHas('attribute', function ($q) use ($request) {
-                $q->where('type', $request->attribute_type);
-            });
-        }
+        $this->applySorting($query, $request);
 
-        if ($request->has('created_from')) {
-            $query->where('created_at', '>=', $request->created_from);
-        }
-
-        if ($request->has('created_to')) {
-            $query->where('created_at', '<=', $request->created_to);
-        }
-
-        $sortBy = $request->input('sort_by', 'created_at');
-        $sortDir = $request->input('sort_dir', 'desc');
-
-        if (in_array($sortBy, ['attribute_id', 'entity_id', 'value', 'created_at', 'updated_at'])) {
-            $query->orderBy($sortBy, $sortDir === 'asc' ? 'asc' : 'desc');
-        }
-
-
-
-        $paginate = $request->input('paginate', 10);
-        $attributeValues = $query->paginate($paginate);
+        $attributeValues = $query->paginate($request->input('paginate', 10));
 
         return response()->json([
             'success' => true,
@@ -79,7 +49,7 @@ class AttributeValueController extends Controller
                 'total_pages' => $attributeValues->lastPage(),
                 'per_page' => $attributeValues->perPage(),
                 'total_records' => $attributeValues->total(),
-            ],
+            ]
         ]);
     }
 
@@ -184,5 +154,54 @@ class AttributeValueController extends Controller
         }
 
         return null;
+    }
+
+    protected function applyCommonFilters($query, $request)
+    {
+        if ($request->has('value')) {
+            $operator = $request->boolean('exact_match') ? '=' : 'LIKE';
+            $value = $request->boolean('exact_match') ? $request->value : "%{$request->value}%";
+            $query->where('value', $operator, $value);
+        }
+
+        if ($request->has('attribute_id')) {
+            $query->where('attribute_id', $request->attribute_id);
+        }
+
+        if ($request->has('attribute_name')) {
+            $query->whereHas(
+                'attribute',
+                fn($q) =>
+                $q->where('name', 'LIKE', "%{$request->attribute_name}%")
+            );
+        }
+
+        if ($request->has('attribute_type')) {
+            $query->whereHas(
+                'attribute',
+                fn($q) =>
+                $q->where('type', $request->attribute_type)
+            );
+        }
+
+        if ($request->has('created_from')) {
+            $query->where('created_at', '>=', $request->created_from);
+        }
+
+        if ($request->has('created_to')) {
+            $query->where('created_at', '<=', $request->created_to);
+        }
+    }
+
+    protected function applySorting($query, $request)
+    {
+        $validSorts = ['attribute_id', 'entity_id', 'value', 'created_at', 'updated_at'];
+        $sortBy = in_array($request->sort_by, $validSorts)
+            ? $request->sort_by
+            : 'created_at';
+
+        $sortDir = strtolower($request->sort_dir) === 'asc' ? 'asc' : 'desc';
+
+        $query->orderBy($sortBy, $sortDir);
     }
 }

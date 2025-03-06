@@ -36,7 +36,7 @@ class TimesheetController extends Controller
         
         return response()->json([
             'success' => true,
-            'data' => $timesheets,
+            'data' => $timesheets->items(),
             'pagination' => [
                     'current_page' => $timesheets->currentPage(),
                     'total_pages' => $timesheets->lastPage(),

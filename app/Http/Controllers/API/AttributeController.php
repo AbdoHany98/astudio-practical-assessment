@@ -45,7 +45,7 @@ class AttributeController extends Controller
         $attributes = $query->paginate($paginate);
         return response()->json([
             'success' => true,
-            'data' => $attributes,
+            'data' => $attributes->items(),
             'pagination' => [
                     'current_page' => $attributes->currentPage(),
                     'total_pages' => $attributes->lastPage(),
