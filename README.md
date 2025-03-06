@@ -1,66 +1,328 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Project Management API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive RESTful API for managing projects with dynamic attributes using an Entity-Attribute-Value (EAV) data model, built with Laravel 12 and PHP 8.2.
 
-## About Laravel
+## Table of Contents
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [Features](#features)
+- [System Architecture](#system-architecture)
+- [Setup Instructions](#setup-instructions)
+- [API Documentation](#api-documentation)
+  - [Authentication](#authentication)
+  - [Projects](#projects)
+  - [Attributes](#attributes)
+  - [Attribute Values](#attribute-values)  
+  - [Timesheets](#timesheets)
+- [Filtering & Pagination](#filtering--pagination)
+- [Example Requests/Responses](#example-requestsresponses)
+- [Test Credentials](#test-credentials)
+- [Error Handling](#error-handling)
+- [Security Considerations](#security-considerations)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Authentication**: Secure user authentication with Laravel Passport
+- **EAV Model**: Dynamic attributes for flexible project management
+- **Advanced Filtering**: Comprehensive filtering system across all resources
+- **Role-Based Access**: Admin and regular user permissions
+- **Timesheet Management**: Track time spent on projects
+- **Pagination**: Control data response size
+- **Data Validation**: Request validation to ensure data integrity
 
-## Learning Laravel
+## System Architecture
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The API implements the Entity-Attribute-Value (EAV) pattern for dynamic attributes:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **Entities**: Projects are the primary entities
+- **Attributes**: Define metadata fields (name, type)
+- **Values**: Store the actual data values
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+This design allows for flexible attribute management without database schema changes.
 
-## Laravel Sponsors
+## Setup Instructions
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Prerequisites
 
-### Premium Partners
+- PHP 8.2 or higher
+- Composer
+- MySQL or PostgreSQL
+- Laravel 12.x
+- Passport 12.x
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Installation
 
-## Contributing
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/AbdoHany98/astudio-practical-assessment.git
+   cd project-management-api
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2. **Install dependencies**:
+   ```bash
+   composer install
+   ```
 
-## Code of Conduct
+3. **Configure environment**:
+   ```bash
+   cp .env.example .env
+   ```
+   Edit the `.env` file with your database credentials and application settings.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4. **Generate application key**:
+   ```bash
+   php artisan key:generate
+   ```
 
-## Security Vulnerabilities
+5. **Run migrations and seeders**:
+   ```bash
+   php artisan migrate --seed
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+6. **Install Passport**:
+   ```bash
+   php artisan passport:install
+   ```
 
-## License
+7. **Start the development server**:
+   ```bash
+   php artisan serve
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## API Documentation
+
+All API endpoints return JSON responses with consistent structures:
+
+```json
+{
+  "success": true|false,
+  "message": "Operation status message (when applicable)",
+  "data": { ... }
+}
+```
+
+### Authentication
+
+| Method | Endpoint           | Description                     | Required Fields                                | Response                                  |
+|--------|--------------------|----------------------------------|------------------------------------------------|-------------------------------------------|
+| POST   | /api/register      | Register a new user              | name, email, password, password_confirmation   | User data + API token                     |
+| POST   | /api/login         | Login with credentials           | email, password                                | User data + API token                     |
+| POST   | /api/logout        | Logout (invalidate token)        | -                                              | Success message                           |
+
+### Projects
+
+| Method | Endpoint             | Description                   | Query Parameters                                     | Authorization      |
+|--------|----------------------|-------------------------------|-----------------------------------------------------|-------------------|
+| GET    | /api/projects        | List projects with pagination | filters, paginate                                   | Required          |
+| POST   | /api/projects        | Create new project            | -                                                   | Admin Required    |
+| GET    | /api/projects/{id}   | Get specific project          | -                                                   | Required          |
+| PUT    | /api/projects/{id}   | Update project                | -                                                   | Admin Required    |
+| DELETE | /api/projects/{id}   | Delete project                | -                                                   | Admin Required    |
+
+### Attributes
+
+| Method | Endpoint                | Description                | Query Parameters                             | Authorization |
+|--------|-------------------------|----------------------------|---------------------------------------------|---------------|
+| GET    | /api/attributes         | List attributes            | name, type, created_from, created_to, paginate, sort_by, sort_dir | Required      |
+| POST   | /api/attributes         | Create new attribute       | -                                           | Admin Required|
+| GET    | /api/attributes/{id}    | Get attribute with values  | -                                           | Required      |
+| PUT    | /api/attributes/{id}    | Update attribute           | -                                           | Admin Required|
+| DELETE | /api/attributes/{id}    | Delete attribute           | -                                           | Admin Required|
+
+### Attribute Values
+
+| Method | Endpoint                      | Description                | Query Parameters                                                 | Authorization |
+|--------|-------------------------------|----------------------------|------------------------------------------------------------------|---------------|
+| GET    | /api/attribute-values         | List attribute values      | attribute_id, entity_id, value, exact_match, attribute_name, attribute_type, created_from, created_to, paginate, sort_by, sort_dir | Required      |
+| POST   | /api/attribute-values         | Create new attribute value | -                                                                | Admin Admin Required Or Project User      |
+| GET    | /api/attribute-values/{id}    | Get attribute value        | -                                                                | Required      |
+| PUT    | /api/attribute-values/{id}    | Update attribute value     | -                                                                | Admin Required Or Project User      |
+| DELETE | /api/attribute-values/{id}    | Delete attribute value     | -                                                                | Admin Required Or Project User      |
+
+### Timesheets
+
+| Method | Endpoint                | Description            | Query Parameters                       | Authorization |
+|--------|-------------------------|------------------------|---------------------------------------|---------------|
+| GET    | /api/timesheets         | List timesheets        | user_id, project_id, date_from, date_to | Required      |
+| POST   | /api/timesheets         | Create timesheet       | -                                     | Admin Required Or Project User      |
+| GET    | /api/timesheets/{id}    | Get timesheet          | -                                     | Admin Required Or Project User      |
+| PUT    | /api/timesheets/{id}    | Update timesheet       | -                                     | Admin Required Or Project User      |
+| DELETE | /api/timesheets/{id}    | Delete timesheet       | -                                     | Admin Required Or Project User      |
+
+## Filtering & Pagination
+
+### Project Filtering
+
+Projects can be filtered using the `filters` query parameter:
+
+- Standard filtering: `?filters[name]=ProjectName`
+- Operator filtering: `?filters[name:like]=Project`
+
+Available operators:
+- `=` (default): Exact match
+- `like`: Partial match (case-insensitive)
+- `>`, `<`, `>=`, `<=`: Comparison operators for numeric fields
+
+### Attribute Filtering
+
+Attributes can be filtered using specific query parameters:
+- `?name=client` - Filter by name (partial match)
+- `?type=text` - Filter by type (exact match)
+- `?created_from=2023-01-01&created_to=2023-12-31` - Date range filtering
+
+### Pagination
+
+All list endpoints support pagination using:
+- `?paginate=10` - Number of results per page
+
+### Sorting
+
+Add sorting capabilities:
+- `?sort_by=name&sort_dir=asc` - Sort by field in ascending or descending order
+
+## Example Requests/Responses
+
+### Create a Project with Attributes
+
+**Request:**
+```http
+POST /api/projects
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {your_token}
+
+{
+  "name": "Website Redesign",
+  "status": "active",
+  "users": [1, 2],
+  "attributes": [
+    {
+      "attribute_id": 1,
+      "value": "Company XYZ"
+    },
+    {
+      "attribute_id": 2,
+      "value": "10000"
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Website Redesign",
+    "status": "active",
+    "attributes": [
+      {
+        "id": 1,
+        "name": "client",
+        "type": "text",
+        "value": "Company XYZ"
+      },
+      {
+        "id": 2,
+        "name": "budget",
+        "type": "number",
+        "value": "10000"
+      }
+    ],
+    "users": [
+      {
+        "id": 1,
+        "name": "John Doe"
+      },
+      {
+        "id": 2,
+        "name": "Jane Smith"
+      }
+    ],
+    "created_at": "2023-01-01T00:00:00.000000Z",
+    "updated_at": "2023-01-01T00:00:00.000000Z"
+  }
+}
+```
+
+### Filter Projects by Attribute
+
+**Request:**
+```http
+GET /api/projects?filters[client:like]=XYZ
+Accept: application/json
+Authorization: Bearer {your_token}
+```
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Website Redesign",
+      "status": "active",
+      "attributes": [
+        {
+          "id": 1,
+          "name": "client",
+          "type": "text",
+          "value": "Company XYZ"
+        },
+        {
+          "id": 2,
+          "name": "budget",
+          "type": "number",
+          "value": "10000"
+        }
+      ],
+      "users": [...],
+      "created_at": "2023-01-01T00:00:00.000000Z",
+      "updated_at": "2023-01-01T00:00:00.000000Z"
+    }
+  ],
+  "links": {...},
+  "meta": {...}
+}
+```
+
+## Test Credentials
+
+For testing purposes, the following credentials are available after running the seeders:
+
+**Admin User:**
+- Email: admin@example.com
+- Password: password
+
+**Regular User:**
+- Email: user@example.com
+- Password: password
+
+## Error Handling
+
+The API returns appropriate HTTP status codes and error messages:
+
+- `200 OK`: Successful operation
+- `201 Created`: Resource created successfully
+- `400 Bad Request`: Invalid input data
+- `401 Unauthorized`: Authentication failure
+- `403 Forbidden`: Permission denied
+- `404 Not Found`: Resource not found
+- `422 Unprocessable Entity`: Validation errors
+- `500 Internal Server Error`: Server error
+
+## Security Considerations
+
+- All API requests (except authentication) require a valid Bearer token
+- Password hashing is handled by Laravel's built-in mechanisms
+- CORS is configured to allow specific origins only
+- Input validation is applied to all endpoints
+- Resource permissions are checked before operations
+
+---
+
+**Note**: All API requests require the following headers:
+- `Content-Type: application/json`
+- `Accept: application/json`
+- `Authorization: Bearer {your_token}` (except for login/register)
+
+For more detailed examples, please refer to the Postman collection included with this project.
