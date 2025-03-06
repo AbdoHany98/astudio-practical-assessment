@@ -25,7 +25,7 @@ class AttributeValueController extends Controller
         $validated = $request->validate([
             'attribute_id' => 'required|exists:attributes,id',
             'entity_id' => 'required|integer|min:1',
-            'value' => 'required|string'
+            'value' => 'required'
         ]);
         //If the system is complex, I believe we will have to validate the value with the attribute_type to
         //ensure values match their attribute type and avoid data inconsistency on database.
@@ -63,7 +63,7 @@ class AttributeValueController extends Controller
         $validated = $request->validate([
             'attribute_id' => 'sometimes|required|exists:attributes,id',
             'entity_id' => 'sometimes|required|integer|min:1',
-            'value' => 'sometimes|required|string'
+            'value' => 'sometimes|required'
         ]);
         $permissionCheck = $this->checkProjectPermission($validated['entity_id'] ?? $attributeValue->entity_id);
         if ($permissionCheck) {
