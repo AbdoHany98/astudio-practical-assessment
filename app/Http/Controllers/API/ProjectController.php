@@ -38,11 +38,9 @@ class ProjectController extends Controller
                 $value = "%$value%";
             }
 
-            // Check if this is a direct model attribute
             if (in_array($key, ['name', 'status'])) {
                 $query->where($key, $operator, $value);
             } else {
-                // This is a dynamic EAV attribute
                 $query->whereHas('attributeValues', function ($q) use ($key, $operator, $value) {
                     $q->whereHas('attribute', function ($q) use ($key) {
                         $q->where('name', $key);

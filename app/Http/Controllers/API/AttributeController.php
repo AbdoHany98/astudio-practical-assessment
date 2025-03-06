@@ -11,12 +11,47 @@ use App\Http\Controllers\Controller;
 
 class AttributeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $attributes = Attribute::all();
+        $query = Attribute::query();
+        
+        // Filter by name
+        if ($request->has('name')) {
+            $query->where('name', 'LIKE', '%' . $request->name . '%');
+        }
+        
+        // Filter by type
+        if ($request->has('type')) {
+            $query->where('type', $request->type);
+        }
+        
+        // Filter by created_at date range
+        if ($request->has('created_from')) {
+            $query->where('created_at', '>=', $request->created_from);
+        }
+        
+        if ($request->has('created_to')) {
+            $query->where('created_at', '<=', $request->created_to);
+        }
+        
+        // Add sorting capability
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        
+        if (in_array($sortBy, ['name', 'type', 'created_at', 'updated_at'])) {
+            $query->orderBy($sortBy, $sortDir === 'asc' ? 'asc' : 'desc');
+        }
+        $paginate = $request->input('paginate', 10);
+        $attributes = $query->paginate($paginate);
         return response()->json([
             'success' => true,
-            'data' => $attributes
+            'data' => $attributes,
+            'pagination' => [
+                    'current_page' => $attributes->currentPage(),
+                    'total_pages' => $attributes->lastPage(),
+                    'per_page' => $attributes->perPage(),
+                    'total_records' => $attributes->total(),
+                ],
         ], Response::HTTP_OK);
     }
 
