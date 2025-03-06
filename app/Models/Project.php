@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Attribute;
 use App\Models\User;
 use App\Models\Timesheet;
 use App\Models\AttributeValue;
